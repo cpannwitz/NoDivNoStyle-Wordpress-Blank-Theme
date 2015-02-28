@@ -1,12 +1,23 @@
 <?php
+/*
+1. Basic theme features
+2. Include scripts and styles
+3. Register Sidebars
+4. Paging functions
+5. Extended theme functions
+*/
 
-// Basic Theme Features
+
+///////////////////////////////////////
+// 1. Basic Theme Features
+///////////////////////////////////////
 function TEMPLATENAME_theme_setup() {
 	register_nav_menus(array(
 		'header_location' => __('Header Navigation Menu'),
 	));
 	add_theme_support( 'title-tag' );
 	add_theme_support( 'post-thumbnails' );
+	set_post_thumbnail_size( 250, 250, true ); // sets the default size for the thumbnails
 	add_theme_support( 'automatic-feed-links' );
 	add_filter('widget_text', 'do_shortcode'); // Use Shortcodes in Text Widgets
 	add_theme_support( 'html5', array( 'search-form', 'comment-form', 'comment-list', 'gallery', 'caption' ) );
@@ -16,18 +27,19 @@ function TEMPLATENAME_theme_setup() {
 }
 add_action('init', 'TEMPLATENAME_theme_setup');
 
-//Register scripts and styles
+///////////////////////////////////////
+// 2. Including scripts and styles
+///////////////////////////////////////
 function TEMPLATENAME_scripts_styles() {
-	// Threaded Comments
+	// Activate Threaded Comments
 	//if ( is_singular() && comments_open() && get_option( 'thread_comments' ) )
 	//	wp_enqueue_script( 'comment-reply' );
 
-	// jQuery implementation
+	// activate jQuery implementation
 	//wp_enqueue_script( 'jQuery');
 
 	// Loads JavaScript file
 	wp_enqueue_script( 'template-script', get_template_directory_uri() . '/js/functions.js', array(), '1.0.0' );
-
 
 	// Loads the info stylesheet.
 	wp_enqueue_style( 'template-info', get_stylesheet_uri(), array(), '1.0.0' );
@@ -37,7 +49,9 @@ function TEMPLATENAME_scripts_styles() {
 }
 add_action( 'wp_enqueue_scripts', 'TEMPLATENAME_scripts_styles' );
 
-//Register Siderbars for Widgets
+///////////////////////////////////////
+// 3. Register Siderbars for Widgets
+///////////////////////////////////////
 function TEMPLATENAME_widgets_init() {
 	register_sidebar( array(
 		'name'          => __( 'Main Widget Area', 'TEMPLATENAME' ),
@@ -51,66 +65,9 @@ function TEMPLATENAME_widgets_init() {
 }
 add_action( 'widgets_init', 'TEMPLATENAME_widgets_init' );
 
-if ( ! function_exists( 'TEMPLATENAME_entry_meta' ) ) :
-// The Meta data for every post
-function TEMPLATENAME_entry_meta() {
-	if ( is_sticky() && is_home() && ! is_paged() )
-		echo '<span class="featured-post">' . __( 'Sticky', 'TEMPLATENAME' ) . '</span>';
-
-	TEMPLATENAME_entry_date();
-
-	$categories_list = get_the_category_list( __( ', ', 'TEMPLATENAME' ) );
-	if ( $categories_list ) {
-		echo '<span class="categories-links">' . $categories_list . '</span>';
-	}
-
-	// Translators: used between list items, there is a space after the comma.
-	$tag_list = get_the_tag_list( '', __( ', ', 'TEMPLATENAME' ) );
-	if ( $tag_list ) {
-		echo '<span class="tags-links"><i class="fa fa-tags"></i>' . $tag_list . '</span>';
-	}
-
-	// Post author
-	if ( 'post' == get_post_type() ) {
-		printf( '<span class="author vcard"><a class="url fn n" href="%1$s" title="%2$s" rel="author">%3$s</a></span>',
-			esc_url( get_author_posts_url( get_the_author_meta( 'ID' ) ) ),
-			esc_attr( sprintf( __( 'View all posts by %s', 'TEMPLATENAME' ), get_the_author() ) ),
-			get_the_author()
-		);
-	}
-}
-endif;
-
-if ( ! function_exists( 'TEMPLATENAME_entry_date' ) ) :
-// The Date function for Meta data
-function TEMPLATENAME_entry_date( $echo = true ) {
-	if ( has_post_format( array( 'chat', 'status' ) ) )
-		$format_prefix = _x( '%1$s on %2$s', '1: post format name. 2: date', 'TEMPLATENAME' );
-	else
-		$format_prefix = '%2$s';
-	$date = sprintf( '<span class="date"><a href="%1$s" title="%2$s" rel="bookmark"><time class="entry-date" datetime="%3$s">%4$s</time></a></span>',
-		esc_url( get_permalink() ),
-		esc_attr( sprintf( __( 'Permalink to %s', 'TEMPLATENAME' ), the_title_attribute( 'echo=0' ) ) ),
-		esc_attr( get_the_date( 'c' ) ),
-		esc_html( sprintf( $format_prefix, get_post_format_string( get_post_format() ), get_the_date() ) )
-	);
-	if ( $echo )
-		echo $date;
-	return $date;
-}
-endif;
-
-if ( ! function_exists( 'TEMPLATENAME_excerpt_more' ) && ! is_admin() ) :
-// Excerpt function
-function TEMPLATENAME_excerpt_more( $more ) {
-	$link = sprintf( '<a href="%1$s" class="more-link">%2$s</a>',
-		esc_url( get_permalink( get_the_ID() ) ),
-			sprintf( __( 'Read more <span class="meta-nav">&raquo;</span>', 'TEMPLATENAME' ))
-		);
-	return ' &hellip; ' . $link;
-}
-add_filter( 'excerpt_more', 'TEMPLATENAME_excerpt_more' );
-endif;
+///////////////////////////////////////
+// 4. Paging functions
+///////////////////////////////////////
 
 if ( ! function_exists( 'TEMPLATENAME_comment_nav' ) ) :
 // Comment Navigation
@@ -135,7 +92,7 @@ function TEMPLATENAME_comment_nav() {
 }
 endif;
 
-// Default Post Navigation with Older / Newer
+// Default Post Navigation with Older / Newer Links
 /*
 if ( ! function_exists( 'TEMPLATENAME_paging_nav' ) ) :
 // Paging Navigation
@@ -166,7 +123,7 @@ endif;
 */
 
 
-//THIS IS THE ADVANCED PAGINATION NAV WITH NUMBERS INSTEAD OF OLD/NEW
+// Advanced Prev / 1 / 2 / 3 Next Post-Page Navigation
 function TEMPLATENAME_paging_nav() {
 
 	if( is_singular() )
@@ -235,6 +192,58 @@ function TEMPLATENAME_paging_nav() {
 	echo '</ul></div>' . "\n";
 
 }
+
+///////////////////////////////////////
+// 5. Extended theme functions
+///////////////////////////////////////
+if ( ! function_exists( 'TEMPLATENAME_entry_meta' ) ) :
+// The Meta data for every post
+function TEMPLATENAME_entry_meta() {
+	if ( is_sticky() && is_home() && ! is_paged() )
+		echo '<span class="featured-post">' . __( 'Sticky', 'TEMPLATENAME' ) . '</span>';
+
+	TEMPLATENAME_entry_date();
+
+	$categories_list = get_the_category_list( __( ', ', 'TEMPLATENAME' ) );
+	if ( $categories_list ) {
+		echo '<span class="categories-links">' . $categories_list . '</span>';
+	}
+
+	// Translators: used between list items, there is a space after the comma.
+	$tag_list = get_the_tag_list( '', __( ', ', 'TEMPLATENAME' ) );
+	if ( $tag_list ) {
+		echo '<span class="tags-links"><i class="fa fa-tags"></i>' . $tag_list . '</span>';
+	}
+
+	// Post author
+	if ( 'post' == get_post_type() ) {
+		printf( '<span class="author vcard"><a class="url fn n" href="%1$s" title="%2$s" rel="author">%3$s</a></span>',
+			esc_url( get_author_posts_url( get_the_author_meta( 'ID' ) ) ),
+			esc_attr( sprintf( __( 'View all posts by %s', 'TEMPLATENAME' ), get_the_author() ) ),
+			get_the_author()
+		);
+	}
+}
+endif;
+
+if ( ! function_exists( 'TEMPLATENAME_entry_date' ) ) :
+// The Date function for Meta data
+function TEMPLATENAME_entry_date( $echo = true ) {
+	if ( has_post_format( array( 'chat', 'status' ) ) )
+		$format_prefix = _x( '%1$s on %2$s', '1: post format name. 2: date', 'TEMPLATENAME' );
+	else
+		$format_prefix = '%2$s';
+	$date = sprintf( '<span class="date"><a href="%1$s" title="%2$s" rel="bookmark"><time class="entry-date" datetime="%3$s">%4$s</time></a></span>',
+		esc_url( get_permalink() ),
+		esc_attr( sprintf( __( 'Permalink to %s', 'TEMPLATENAME' ), the_title_attribute( 'echo=0' ) ) ),
+		esc_attr( get_the_date( 'c' ) ),
+		esc_html( sprintf( $format_prefix, get_post_format_string( get_post_format() ), get_the_date() ) )
+	);
+	if ( $echo )
+		echo $date;
+	return $date;
+}
+endif;
 
 // Breadcrumbs function 
 function the_breadcrumb() {
